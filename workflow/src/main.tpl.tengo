@@ -1,0 +1,25 @@
+wf := import("@platforma-sdk/workflow-tengo:workflow")
+file := import("@platforma-sdk/workflow-tengo:file")
+xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
+pframes := import("@platforma-sdk/workflow-tengo:pframes");
+
+wf.body(func(args) {
+	fileUploader := file.importFile(args.fileHandle);
+	fileSpecAndData := xsv.importFile(fileUploader.file, args.fileExt, args.spec, { splitDataAndSpec: true });
+
+	outputPf := pframes.pFrameBuilder();
+	for k, v in fileSpecAndData {
+		outputPf.add(k, v.spec, v.data);
+	}
+	outputPf = outputPf.build();
+
+	return {
+		outputs: {
+			fileUploader: fileUploader.handle,
+			filePFrame: pframes.exportFrame(outputPf)
+		},
+		exports: {
+			outputPf: outputPf
+		}
+	}
+})

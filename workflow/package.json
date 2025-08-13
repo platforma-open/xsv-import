@@ -1,0 +1,15 @@
+{
+  "name": "@platforma-open/milaboratories.xsv-import.workflow",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Tengo-based template",
+  "scripts": {
+    "build": "rm -rf dist && pl-tengo check && pl-tengo build"
+  },
+  "dependencies": {
+    "@platforma-sdk/workflow-tengo": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/tengo-builder": "catalog:"
+  }
+}

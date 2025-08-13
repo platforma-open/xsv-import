@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
+    "build": "turbo run build",
+    "build:dev": "env PL_PKG_DEV=local turbo run build",
+    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
+    "test:dry-run": "env PL_PKG_DEV=local turbo run test --dry-run=json",
+    "mark-stable": "turbo run mark-stable",
+    "watch": "turbo watch build",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "update-sdk": "node scripts/update-sdk-packages.js"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "devDependencies": {
+    "turbo": "catalog:",
+    "@changesets/cli": "catalog:",
+    "js-yaml": "catalog:"
+  },
+  "packageManager": "pnpm@9.12.0"
+}

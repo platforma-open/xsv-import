@@ -1,0 +1,26 @@
+{
+  "name": "@platforma-open/milaboratories.xsv-import.ui",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "ts-builder serve --target browser",
+    "watch": "ts-builder build --target browser --watch",
+    "build": "ts-builder build --target browser",
+    "type-check": "ts-builder types --target browser"
+  },
+  "dependencies": {
+    "@platforma-open/milaboratories.xsv-import.model": "workspace:*",
+    "@milaboratories/pl-model-common": "catalog:",
+    "@platforma-sdk/ui-vue": "catalog:",
+    "@platforma-sdk/model": "catalog:",
+    "es-toolkit": "catalog:",
+    "csv-parse": "catalog:",
+    "@vueuse/core": "catalog:",
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@platforma-sdk/eslint-config": "catalog:",
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:"
+  }
+}
