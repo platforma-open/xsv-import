@@ -27,6 +27,8 @@ export const platforma = BlockModel.create('Heavy')
     return ctx.args.spec != null
       && Array.isArray(ctx.args.spec.axes)
       && ctx.args.spec.axes.length > 0
+      && Array.isArray(ctx.args.spec.columns)
+      && ctx.args.spec.columns.length > 0
       && ctx.args.fileHandle != null
       && ctx.args.fileExt != null;
   })

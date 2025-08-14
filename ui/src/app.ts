@@ -7,6 +7,12 @@ import MainPage from './MainPage.vue';
 import { prepareSpec } from './utils/spec';
 
 export const sdkPlugin = defineApp(platforma, (app) => {
+  app.model.ui.spec ??= {
+    axes: [],
+    columns: [],
+  };
+  app.model.ui.spec.axes ??= [];
+  app.model.ui.spec.columns ??= [];
   app.model.ui.tableState ??= createPlDataTableStateV2();
 
   watch(() => app.model.ui, (state) => {
