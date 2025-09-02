@@ -8,5 +8,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts"
   ]
 }

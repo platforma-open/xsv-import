@@ -35,6 +35,9 @@ function propagationNames<T extends AxisSpecParam | ColumnSpecParam>(axisSpec: T
 }
 
 export function autoFillSpecFromMetadata(metadata: XsvMetadata, existingSpec: SpecUI): SpecUI {
+  existingSpec.axes.length = 0;
+  existingSpec.columns.length = 0;
+
   addAllColumns(metadata, existingSpec.columns);
 
   if (metadata.header.length > 0 && existingSpec.axes.length === 0) {

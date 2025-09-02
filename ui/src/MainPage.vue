@@ -2,6 +2,7 @@
 import type { LocalImportFileHandle } from '@milaboratories/pl-model-common';
 import type { SpecUI } from '@platforma-open/milaboratories.xsv-import.model';
 import { PlBlockPage, PlBtnPrimary, PlFileInput, usePlBlockPageTitleTeleportTarget } from '@platforma-sdk/ui-vue';
+import { watch } from 'vue';
 import { useApp } from './app';
 import Spec from './components/Spec.vue';
 import { useMetadataXsv } from './hooks/useMetadataXsv';
@@ -9,22 +10,25 @@ import { autoFillSpecFromMetadata } from './utils/spec';
 
 const teleportTarget = usePlBlockPageTitleTeleportTarget('PlAgGridColumnManager');
 const app = useApp();
+const getDefaultSpec = (): SpecUI => ({
+  commentLinePrefix: undefined,
+  skipEmptyLines: false,
+  allowColumnLabelDuplicates: true,
+  allowArtificialColumns: false,
+  columnNamePrefix: undefined,
+  storageFormat: 'Binary',
+  partitionKeyLength: 0,
+  index: undefined,
+  axes: [],
+  columns: [],
+});
 
-if (app.model.ui.spec === undefined) {
-  app.model.ui.spec = {
-    separator: ',',
-    commentLinePrefix: undefined,
-    skipEmptyLines: false,
-    allowColumnLabelDuplicates: true,
-    allowArtificialColumns: false,
-    columnNamePrefix: undefined,
-    storageFormat: 'Binary',
-    partitionKeyLength: 0,
-    index: undefined,
-    axes: [],
-    columns: [],
-  } satisfies SpecUI;
-}
+app.model.ui.spec ??= getDefaultSpec();
+
+watch([() => app.model.ui.fileHandle], ([fileHandle]) => {
+  if (fileHandle != null) return;
+  app.model.ui.spec = getDefaultSpec();
+}, { immediate: true });
 
 const state = app.model.ui as typeof app.model.ui & {
   spec: SpecUI;
@@ -34,6 +38,12 @@ const metadata = useMetadataXsv(
   () => state.fileHandle as undefined | LocalImportFileHandle,
   () => state.spec?.separator,
 );
+
+watch(() => metadata.value?.delimiter, (value) => {
+  if (value == null) return;
+  state.spec.separator = value;
+});
+
 const handleAutoFill = () => {
   if (metadata.value && state.spec) {
     autoFillSpecFromMetadata(metadata.value, state.spec);

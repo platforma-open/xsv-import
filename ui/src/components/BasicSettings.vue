@@ -52,6 +52,7 @@ const addIndex = () => {
         <PlDropdown
           label="Separator"
           :options="[
+            { label: 'Auto', value: '' },
             { label: 'Comma (,)', value: ',' },
             { label: 'Tab (\\t)', value: '\t' },
             { label: 'Semicolon (;)', value: ';' },
