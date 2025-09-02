@@ -6,7 +6,8 @@
     "dev": "ts-builder serve --target browser",
     "watch": "ts-builder build --target browser --watch",
     "build": "ts-builder build --target browser",
-    "type-check": "ts-builder types --target browser"
+    "type-check": "ts-builder types --target browser",
+    "test": "vitest"
   },
   "dependencies": {
     "@platforma-open/milaboratories.xsv-import.model": "workspace:*",
@@ -16,6 +17,7 @@
     "es-toolkit": "catalog:",
     "csv-parse": "catalog:",
     "@vueuse/core": "catalog:",
+    "vitest": "catalog:",
     "vue": "catalog:"
   },
   "devDependencies": {

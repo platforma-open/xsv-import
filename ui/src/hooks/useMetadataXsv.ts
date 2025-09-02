@@ -7,40 +7,140 @@ import { toValue } from 'vue';
 import type { ValueType } from '../types/spec';
 
 export type XsvMetadata = {
-  header: string[];
   types: Record<string, ValueType>;
+  header: string[];
+  delimiter: string;
 };
 
-export function useMetadataXsv(fileHandle: MaybeRefOrGetter<undefined | LocalImportFileHandle>, separator: MaybeRefOrGetter<undefined | string>) {
+export function useMetadataXsv(_fileHandle: MaybeRefOrGetter<undefined | LocalImportFileHandle>, _delimiter: MaybeRefOrGetter<undefined | string>) {
   return computedAsync(async (): Promise<undefined | XsvMetadata> => {
-    fileHandle = toValue(fileHandle) as LocalImportFileHandle;
-    separator = toValue(separator);
+    const fileHandle = toValue(_fileHandle) as LocalImportFileHandle;
+    const delimiter = toValue(_delimiter);
 
-    if (!fileHandle || !separator) {
+    if (!fileHandle) {
       return undefined;
     }
 
-    const { header, rows } = await parseLocalXsvFile({ fileHandle, separator, linesLimit: 30 });
-    const types = getColumnTypes(header, rows);
+    const result = await parseLocalXsvFile({ fileHandle, delimiter, linesLimit: 30 });
+    const types = getColumnTypes(result.header, result.rows);
 
     return {
-      header,
       types,
+      header: result.header,
+      delimiter: result.delimiter,
     };
   }, undefined);
 }
 
-export async function parseLocalXsvFile<T extends object>({ fileHandle, separator, linesLimit, batchSizeReading }: {
+export const RECORD_DELIMETER = String.fromCharCode(30);
+export const UNIT_DELIMITER = String.fromCharCode(31);
+export function detectDelimiter(sampleText: string, delimiters = [',', '\t', '|', ';', RECORD_DELIMETER, UNIT_DELIMITER]) {
+  const lines = sampleText.split('\n');
+  const delimitersLineHistory = new Map<string, number[]>();
+
+  for (const line of lines) {
+    for (const delimiter of delimiters) {
+      const parts = line.split(delimiter);
+      const history = delimitersLineHistory.get(delimiter) || [];
+      history.push(parts.length);
+      delimitersLineHistory.set(delimiter, history);
+    }
+  }
+
+  // Find the delimiter with the most consistent column counts
+  return Array.from(delimitersLineHistory.entries()).reduce((acc, [delimiter, history]) => {
+    if (history.length === 0) return acc;
+
+    const sorted = history.sort((a, b) => a - b);
+    const first = sorted[0];
+    let stable = true;
+    let current = first;
+    let rating = 1;
+    let maxRating = 0;
+
+    for (let i = 1; i < sorted.length; i++) {
+      stable = stable && current === sorted[i];
+      if (current === sorted[i]) {
+        rating++;
+      } else {
+        current = sorted[i];
+        rating = 1;
+        maxRating = Math.max(maxRating, rating);
+      }
+    }
+    maxRating = Math.max(maxRating, rating) * (stable ? current : 1);
+
+    const moreStable = !acc.stable && stable;
+    const sameStable = acc.stable === stable;
+    const moreRating = sameStable && maxRating > acc.max;
+
+    if (moreStable || (sameStable && moreRating)) {
+      acc.max = maxRating;
+      acc.stable = stable;
+      acc.delimiter = delimiter;
+    }
+    return acc;
+  }, { delimiter: '', max: 0, stable: false }).delimiter;
+}
+
+export async function parseLocalXsvFile<T extends object>({ fileHandle, delimiter, linesLimit, batchSizeReading }: {
   fileHandle: LocalImportFileHandle;
-  separator: string;
   linesLimit: number;
+  delimiter?: string;
   batchSizeReading?: number;
-}) {
-  return new Promise<{ header: (keyof T)[]; rows: T[] }>((resolve, reject) => {
-    const driver = getRawPlatformaInstance().lsDriver;
+}): Promise<{ header: (keyof T)[]; rows: T[]; delimiter: string }> {
+  const text = await readXsv(fileHandle, linesLimit, batchSizeReading).catch((err) => {
+    throw new Error('Error while reading file content', { cause: err });
+  });
+
+  delimiter = delimiter ?? detectDelimiter(text);
+
+  const data = await parseXsv<T>(text, delimiter).catch((err) => {
+    throw new Error('Error while parsing XSV', { cause: err });
+  });
+
+  return {
+    header: data.header,
+    rows: data.rows,
+    delimiter,
+  };
+}
+
+function readXsv(fileHandle: LocalImportFileHandle, linesLimit: number = 30, chunkSize: number = 8192) {
+  const driver = getRawPlatformaInstance().lsDriver;
+  const decoder = new TextDecoder();
+
+  return reading(false, 0);
+
+  function reading(done: boolean, iteration: number, textBuffer: string = ''): Promise<string> {
+    if (done) {
+      return Promise.resolve(textBuffer);
+    }
+
+    return driver.getLocalFileContent(fileHandle, { offset: iteration * chunkSize, length: chunkSize }).then(
+      (fileBuffer) => {
+        if (fileBuffer.length === 0) {
+          return reading(true, iteration + 1);
+        }
+
+        textBuffer += decoder.decode(fileBuffer, { stream: true });
+
+        if ((textBuffer.match(/\n/g)?.length ?? 0) > linesLimit) {
+          textBuffer = textBuffer.substring(0, textBuffer.lastIndexOf('\n'));
+          return reading(true, iteration + 1, textBuffer);
+        }
+
+        return reading(false, iteration + 1, textBuffer);
+      },
+    );
+  };
+}
+
+function parseXsv<T>(text: string, delimiter: string): Promise<{ header: (keyof T)[]; rows: T[] }> {
+  return new Promise((resolve, reject) => {
     const parser = parse({
       columns: true,
-      delimiter: separator,
+      delimiter,
       autoParse: true,
     });
     const rows: T[] = [];
@@ -62,49 +162,11 @@ export async function parseLocalXsvFile<T extends object>({ fileHandle, separato
       resolve({ header: (header ?? []) as (keyof T)[], rows });
     });
 
-    const decoder = new TextDecoder();
-    const chunkSize = batchSizeReading ?? 8192;
-
-    function reading(done: boolean, iteration: number, textBuffer: string = ''): Promise<void> {
-      if (done) {
-        parser.end();
-        return Promise.resolve();
-      }
-
-      return driver.getLocalFileContent(fileHandle, { offset: iteration * chunkSize, length: chunkSize }).then(
-        (fileBuffer) => {
-          if (fileBuffer.length === 0) {
-            return reading(true, iteration + 1);
-          }
-
-          // Decode the chunk and add to buffer
-          const chunk = decoder.decode(fileBuffer, { stream: true });
-          textBuffer += chunk;
-
-          // Extract complete lines from buffer
-          const lines = textBuffer.split('\n');
-
-          // Keep the last incomplete line in buffer
-          textBuffer = lines.pop() || '';
-
-          // Process complete lines
-          for (const line of lines) {
-            if (line.trim()) { // Skip empty lines
-              parser.write(line + '\n');
-              if (rows.length >= linesLimit) {
-                return reading(true, iteration + 1);
-              }
-            }
-          }
-
-          return reading(false, iteration + 1, textBuffer);
-        },
-      );
+    for (const line of text.split('\n')) {
+      parser.write(line + '\n');
     }
 
-    reading(false, 0).catch((err) => {
-      reject(new Error('Error while reading file content', { cause: err }));
-    });
+    parser.end();
   });
 }
 
