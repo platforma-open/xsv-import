@@ -38,12 +38,6 @@ describe('detectDelimiter', () => {
     expect(detectDelimiter(sample)).toBe(',');
   });
 
-  it('returns empty string for empty content', () => {
-    const sample = '';
-    // With no content, all delimiters tie with the same score; first candidate (comma) wins
-    expect(detectDelimiter(sample)).toBe(',');
-  });
-
   it('prefers delimiter with most consistent column counts across lines', () => {
     // Here comma yields consistent 4 columns, space would produce varying counts
     const sample = [
@@ -92,6 +86,19 @@ describe('detectDelimiter', () => {
       '"7",11.2,"VC",0.5',
       '"8",11.2,"VC",0.5',
       '"9",5.2,"VC",0.5',
+    ].join('\n');
+    expect(detectDelimiter(sample)).toBe(',');
+  });
+
+  it('detects empty lines are ignored', () => {
+    const sample = [
+      '',
+      'a,b,c',
+      '',
+      '1,2,3',
+      '',
+      'x,y,z',
+      '',
     ].join('\n');
     expect(detectDelimiter(sample)).toBe(',');
   });

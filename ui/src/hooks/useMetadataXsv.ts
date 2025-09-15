@@ -39,6 +39,7 @@ export function detectDelimiter(sampleText: string, delimiters = [',', '\t', '|'
   const delimitersLineHistory = new Map<string, number[]>();
 
   for (const line of lines) {
+    if (line.trim() === '') continue;
     for (const delimiter of delimiters) {
       const parts = line.split(delimiter);
       const history = delimitersLineHistory.get(delimiter) || [];
@@ -114,13 +115,13 @@ function readXsv(fileHandle: LocalImportFileHandle, linesLimit: number = 30, chu
 
   function reading(done: boolean, iteration: number, textBuffer: string = ''): Promise<string> {
     if (done) {
-      return Promise.resolve(textBuffer);
+      return Promise.resolve(textBuffer.trim());
     }
 
     return driver.getLocalFileContent(fileHandle, { offset: iteration * chunkSize, length: chunkSize }).then(
       (fileBuffer) => {
         if (fileBuffer.length === 0) {
-          return reading(true, iteration + 1);
+          return reading(true, iteration + 1, textBuffer);
         }
 
         textBuffer += decoder.decode(fileBuffer, { stream: true });
