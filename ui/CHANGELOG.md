@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import.ui
 
+## 1.0.4
+
+### Patch Changes
+
+- c28a38b: fix import tables with unstricted names
+
 ## 1.0.3
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.xsv-import
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [c28a38b]
+  - @platforma-open/milaboratories.xsv-import.ui@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
