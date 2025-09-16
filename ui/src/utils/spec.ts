@@ -42,7 +42,7 @@ export function autoFillSpecFromMetadata(metadata: XsvMetadata, existingSpec: Sp
 
   if (metadata.header.length > 0 && existingSpec.axes.length === 0 && metadata.firstPossibleAxis != null) {
     existingSpec.axes.push({
-      id: `axis-${Date.now()}`,
+      id: crypto.randomUUID(),
       expanded: false,
       disabled: false,
       payload: {
@@ -69,7 +69,7 @@ export function addAllColumns(metadata: XsvMetadata, columnsSpecParamsUI: Column
 }
 
 export function createColumn(column: string, valueType: undefined | ValueType, expanded = false): ColumnSpecParamUI {
-  const id = `${column}-${Date.now()}`;
+  const id = crypto.randomUUID();
 
   return {
     id,
