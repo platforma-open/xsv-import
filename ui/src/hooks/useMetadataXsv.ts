@@ -10,6 +10,7 @@ export type XsvMetadata = {
   types: Record<string, ValueType>;
   header: string[];
   delimiter: string;
+  firstPossibleAxis: undefined | string;
 };
 
 export function useMetadataXsv(_fileHandle: MaybeRefOrGetter<undefined | LocalImportFileHandle>, _delimiter: MaybeRefOrGetter<undefined | string>) {
@@ -28,6 +29,7 @@ export function useMetadataXsv(_fileHandle: MaybeRefOrGetter<undefined | LocalIm
       types,
       header: result.header,
       delimiter: result.delimiter,
+      firstPossibleAxis: getFirstAxisReadyColumn(result.header, result.rows),
     };
   }, undefined);
 }
@@ -220,4 +222,24 @@ export function getColumnTypes<T extends object>(header: string[], rows: T[]): R
   }
 
   return columnTypes;
+}
+
+export function getFirstAxisReadyColumn<T extends object, H extends keyof T>(header: H[], rows: T[]): undefined | H {
+  const uniq = new Set();
+
+  root: for (const columnName of header) {
+    uniq.clear();
+
+    for (const row of rows) {
+      const value = row[columnName];
+      if (uniq.has(value)) {
+        continue root;
+      } else {
+        uniq.add(value);
+      }
+    }
+    return columnName;
+  }
+
+  return undefined;
 }

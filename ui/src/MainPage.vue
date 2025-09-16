@@ -25,9 +25,10 @@ const getDefaultSpec = (): SpecUI => ({
 
 app.model.ui.spec ??= getDefaultSpec();
 
-watch([() => app.model.ui.fileHandle], ([fileHandle]) => {
-  if (fileHandle != null) return;
-  app.model.ui.spec = getDefaultSpec();
+watch(() => app.model.ui.fileHandle, (newFileHandle, olfFileHandle) => {
+  if (newFileHandle !== olfFileHandle) {
+    app.model.ui.spec = getDefaultSpec();
+  }
 }, { immediate: true });
 
 const state = app.model.ui as typeof app.model.ui & {
