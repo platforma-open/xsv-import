@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T">
 import type { ValueType } from '@platforma-open/milaboratories.xsv-import.model';
 import {
-    PlBtnPrimary,
-    PlDropdown,
+  PlBtnPrimary,
+  PlDropdown,
 } from '@platforma-sdk/ui-vue';
 import { isNil } from 'es-toolkit';
 import { computed, ref } from 'vue';

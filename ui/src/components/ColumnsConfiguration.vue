@@ -11,7 +11,7 @@ import {
 import type { XsvMetadata } from '../hooks/useMetadataXsv';
 import { VALUE_TYPE_OPTIONS } from '../types/spec';
 import { jsonToString, stringToJson } from '../utils/json';
-import { addAllColumns } from '../utils/spec';
+import { addAllColumns, createColumn } from '../utils/spec';
 import AddColumn from './AddColumn.vue';
 
 const columnsSpecParamsUI = defineModel<ColumnSpecParamUI[]>({
@@ -23,18 +23,7 @@ const props = defineProps<{
 }>();
 
 const addColumn = (column: undefined | string, valueType: undefined | ValueType) => {
-  columnsSpecParamsUI.value.push({
-    id: Date.now().toString(),
-    expanded: true,
-    disabled: false,
-    payload: {
-      column: column ?? '',
-      spec: {
-        valueType: valueType ?? 'String',
-        name: column ?? '',
-      },
-    },
-  });
+  columnsSpecParamsUI.value.push(createColumn(column ?? '', valueType, true));
 };
 
 const handleCreateAll = () => {
@@ -114,14 +103,6 @@ const updateColumnAnnotations = (index: number, value: string) => {
           >
             Allow NA Values
           </PlCheckbox>
-        </div>
-
-        <div :class="$style.formRow">
-          <PlTextField
-            :model-value="column.payload.id || ''"
-            label="ID" placeholder="Column ID (defaults to sanitized column label)"
-            @update:model-value="column.payload.id = $event || undefined"
-          />
         </div>
 
         <!-- Column Spec -->
