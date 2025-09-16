@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.xsv-import
 
+## 1.0.3
+
+### Patch Changes
+
+- 372f594: Bump
+- Updated dependencies [372f594]
+  - @platforma-open/milaboratories.xsv-import.model@1.0.3
+  - @platforma-open/milaboratories.xsv-import.ui@1.0.3
+  - @platforma-open/milaboratories.xsv-import.workflow@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes

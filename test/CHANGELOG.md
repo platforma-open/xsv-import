@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import.test
 
+## 1.0.3
+
+### Patch Changes
+
+- 372f594: Bump
+
 ## 1.0.2
 
 ### Patch Changes
