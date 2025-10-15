@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import.model
 
+## 1.0.4
+
+### Patch Changes
+
+- b3d7157: Technical release
+
 ## 1.0.3
 
 ### Patch Changes

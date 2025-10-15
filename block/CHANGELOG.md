@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.xsv-import
 
+## 1.0.5
+
+### Patch Changes
+
+- b3d7157: Technical release
+- Updated dependencies [b3d7157]
+  - @platforma-open/milaboratories.xsv-import.model@1.0.4
+  - @platforma-open/milaboratories.xsv-import.ui@1.0.5
+  - @platforma-open/milaboratories.xsv-import.workflow@1.0.4
+
 ## 1.0.4
 
 ### Patch Changes
