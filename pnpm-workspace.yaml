@@ -19,7 +19,7 @@ catalog:
   "@milaboratories/build-configs": ^1.0.0
   "@milaboratories/pl-model-common": ^1.19.0
 
-  "@platforma-open/milaboratories.runenv-python-3": ^1.7.4
+  "@platforma-open/milaboratories.runenv-python-3": ^1.7.5
   
   "typescript": ~5.5.4
   "turbo": ^2.5.4
