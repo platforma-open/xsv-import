@@ -1,9 +1,9 @@
 <script setup lang="tsx">
-import type { SpecUI } from '@platforma-open/milaboratories.xsv-import.model';
-import type { XsvMetadata } from '../hooks/useMetadataXsv';
-import AxesConfiguration from './AxesConfiguration.vue';
-import BasicSettings from './BasicSettings.vue';
-import ColumnsConfiguration from './ColumnsConfiguration.vue';
+import type { SpecUI } from "@platforma-open/milaboratories.xsv-import.model";
+import type { XsvMetadata } from "../hooks/useMetadataXsv";
+import AxesConfiguration from "./AxesConfiguration.vue";
+import BasicSettings from "./BasicSettings.vue";
+import ColumnsConfiguration from "./ColumnsConfiguration.vue";
 
 const spec = defineModel<SpecUI>({ required: true });
 const props = defineProps<{ metadata?: XsvMetadata }>();

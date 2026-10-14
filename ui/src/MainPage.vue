@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import type { LocalImportFileHandle } from '@milaboratories/pl-model-common';
-import type { SpecUI } from '@platforma-open/milaboratories.xsv-import.model';
-import { PlBlockPage, PlBtnPrimary, PlFileInput, usePlBlockPageTitleTeleportTarget } from '@platforma-sdk/ui-vue';
-import { watch } from 'vue';
-import { useApp } from './app';
-import Spec from './components/Spec.vue';
-import { useMetadataXsv } from './hooks/useMetadataXsv';
-import { autoFillSpecFromMetadata } from './utils/spec';
+import type { LocalImportFileHandle } from "@milaboratories/pl-model-common";
+import type { SpecUI } from "@platforma-open/milaboratories.xsv-import.model";
+import {
+  PlBlockPage,
+  PlBtnPrimary,
+  PlFileInput,
+  usePlBlockPageTitleTeleportTarget,
+} from "@platforma-sdk/ui-vue";
+import { watch } from "vue";
+import { useApp } from "./app";
+import Spec from "./components/Spec.vue";
+import { useMetadataXsv } from "./hooks/useMetadataXsv";
+import { autoFillSpecFromMetadata } from "./utils/spec";
 
-const teleportTarget = usePlBlockPageTitleTeleportTarget('PlAgGridColumnManager');
+const teleportTarget = usePlBlockPageTitleTeleportTarget("PlAgGridColumnManager");
 const app = useApp();
 const getDefaultSpec = (): SpecUI => ({
   commentLinePrefix: undefined,
@@ -16,22 +21,26 @@ const getDefaultSpec = (): SpecUI => ({
   allowColumnLabelDuplicates: true,
   allowArtificialColumns: false,
   columnNamePrefix: undefined,
-  storageFormat: 'Binary',
+  storageFormat: "Binary",
   partitionKeyLength: 0,
   index: undefined,
   axes: [],
   columns: [],
 });
 
-app.model.ui.spec ??= getDefaultSpec();
+app.model.data.spec ??= getDefaultSpec();
 
-watch(() => app.model.ui.fileHandle, (newFileHandle, olfFileHandle) => {
-  if (newFileHandle !== olfFileHandle) {
-    app.model.ui.spec = getDefaultSpec();
-  }
-}, { immediate: true });
+watch(
+  () => app.model.data.fileHandle,
+  (newFileHandle, olfFileHandle) => {
+    if (newFileHandle !== olfFileHandle) {
+      app.model.data.spec = getDefaultSpec();
+    }
+  },
+  { immediate: true },
+);
 
-const state = app.model.ui as typeof app.model.ui & {
+const state = app.model.data as typeof app.model.data & {
   spec: SpecUI;
 };
 
@@ -40,10 +49,13 @@ const metadata = useMetadataXsv(
   () => state.spec?.separator,
 );
 
-watch(() => metadata.value?.delimiter, (value) => {
-  if (value == null) return;
-  state.spec.separator = value;
-});
+watch(
+  () => metadata.value?.delimiter,
+  (value) => {
+    if (value == null) return;
+    state.spec.separator = value;
+  },
+);
 
 const handleAutoFill = () => {
   if (metadata.value && state.spec) {
@@ -54,26 +66,19 @@ const handleAutoFill = () => {
 
 <template>
   <PlBlockPage>
-    <template #title>
-      File Import
-    </template>
+    <template #title> File Import </template>
 
     <Teleport v-if="teleportTarget" :to="teleportTarget">
-      <PlBtnPrimary icon="clipboard-copied" @click.stop="handleAutoFill">
-        Auto fill
-      </PlBtnPrimary>
+      <PlBtnPrimary icon="clipboard-copied" @click.stop="handleAutoFill"> Auto fill </PlBtnPrimary>
     </Teleport>
 
     <PlFileInput
-      v-model="app.model.ui.fileHandle"
+      v-model="app.model.data.fileHandle"
       label="File csv/tsv"
       :extensions="['.csv', '.tsv']"
       :progress="app.model.outputs.fileUploader"
     />
 
-    <Spec
-      v-model="state.spec"
-      :metadata="metadata"
-    />
+    <Spec v-model="state.spec" :metadata="metadata" />
   </PlBlockPage>
 </template>

@@ -1,17 +1,72 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 file := import("@platforma-sdk/workflow-tengo:file")
 xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
-pframes := import("@platforma-sdk/workflow-tengo:pframes");
+pframes := import("@platforma-sdk/workflow-tengo:pframes")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+json := import("json")
+
+// Split the columns by the axes they are keyed on. A column with `spec.parentAxes` is
+// imported over that subset of the declared axes, in the given order; a column without
+// it is keyed on every declared axis. Each distinct subset is one converter run over the
+// same file, so one block can publish a sample-level anchor next to per-key properties.
+//
+// `partitionKeyLength` names the first N declared axes; a group keeps only those of its
+// axes that fall among them, so a column keyed on later axes alone stays unpartitioned.
+columnGroups := func(spec) {
+	pkl := 0
+	if !is_undefined(spec.partitionKeyLength) {
+		pkl = spec.partitionKeyLength
+	}
+
+	allAxes := []
+	for i, _ in spec.axes {
+		allAxes = append(allAxes, i)
+	}
+
+	groups := {}
+	for col in spec.columns {
+		axisIdx := allAxes
+		if !is_undefined(col.spec.parentAxes) {
+			axisIdx = col.spec.parentAxes
+		}
+
+		key := json.encode(axisIdx)
+		if is_undefined(groups[key]) {
+			axes := []
+			groupPkl := 0
+			for i in axisIdx {
+				axes = append(axes, spec.axes[i])
+				if i < pkl {
+					groupPkl += 1
+				}
+			}
+			groups[key] = { axes: axes, partitionKeyLength: groupPkl, columns: [] }
+		}
+
+		colSpec := maps.clone(col.spec)
+		delete(colSpec, "parentAxes")
+		groups[key].columns = append(groups[key].columns, maps.merge(col, { spec: colSpec }))
+	}
+
+	return groups
+}
 
 wf.body(func(args) {
-	fileUploader := file.importFile(args.fileHandle);
-	fileSpecAndData := xsv.importFile(fileUploader.file, args.fileExt, args.spec, { splitDataAndSpec: true });
+	fileUploader := file.importFile(args.fileHandle)
 
-	outputPf := pframes.pFrameBuilder();
-	for k, v in fileSpecAndData {
-		outputPf.add(k, v.spec, v.data);
+	outputPf := pframes.pFrameBuilder()
+	for _, group in columnGroups(args.spec) {
+		groupSpec := maps.merge(args.spec, {
+			axes: group.axes,
+			columns: group.columns,
+			partitionKeyLength: group.partitionKeyLength
+		})
+		fileSpecAndData := xsv.importFile(fileUploader.file, args.fileExt, groupSpec, { splitDataAndSpec: true })
+		for k, v in fileSpecAndData {
+			outputPf.add(k, v.spec, v.data)
+		}
 	}
-	outputPf = outputPf.build();
+	outputPf = outputPf.build()
 
 	return {
 		outputs: {

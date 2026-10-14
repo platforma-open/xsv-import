@@ -1,12 +1,9 @@
 <script setup lang="ts" generic="T">
-import type { ValueType } from '@platforma-open/milaboratories.xsv-import.model';
-import {
-  PlBtnPrimary,
-  PlDropdown,
-} from '@platforma-sdk/ui-vue';
-import { isNil } from 'es-toolkit';
-import { computed, ref } from 'vue';
-import type { XsvMetadata } from '../hooks/useMetadataXsv';
+import type { ValueType } from "@platforma-open/milaboratories.xsv-import.model";
+import { PlBtnPrimary, PlDropdown } from "@platforma-sdk/ui-vue";
+import { isNil } from "es-toolkit";
+import { computed, ref } from "vue";
+import type { XsvMetadata } from "../hooks/useMetadataXsv";
 
 const props = defineProps<{
   metadata?: XsvMetadata;
@@ -28,9 +25,9 @@ const metadataColumnOptions = computed(() =>
 
 const handleAdd = () => {
   const column = selectedMetadataColumn.value;
-  const valueType = (isNil(column) ? undefined : props.metadata?.types[column]);
+  const valueType = isNil(column) ? undefined : props.metadata?.types[column];
 
-  emit('add', column, valueType);
+  emit("add", column, valueType);
 };
 </script>
 
@@ -43,9 +40,7 @@ const handleAdd = () => {
       placeholder="Select metadata column"
       clearable
     />
-    <PlBtnPrimary :class="$style.btn" @click="handleAdd">
-      Add
-    </PlBtnPrimary>
+    <PlBtnPrimary :class="$style.btn" @click="handleAdd"> Add </PlBtnPrimary>
   </div>
 </template>
 
