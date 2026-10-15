@@ -29,17 +29,17 @@ columnGroups := func(spec) {
 	}
 
 	groups := {}
-	for col in spec.columns {
+	for colIdx, col in spec.columns {
 		axisIdx := allAxes
 		if !is_undefined(col.spec.parentAxes) {
 			axisIdx = col.spec.parentAxes
 		}
 
-		// Two columns sharing a regex still drop different rows, so a filtered column is
-		// keyed on its own file column, never on the regex text.
-		ownRows := ""
+		// A filtered output is keyed on its own position: neither a shared regex nor a
+		// shared file column means two outputs drop the same rows.
+		ownRows := -1
 		if !is_undefined(col.filterOutRegex) {
-			ownRows = col.column
+			ownRows = colIdx
 		}
 		key := json.encode([axisIdx, ownRows])
 		if is_undefined(groups[key]) {
@@ -81,15 +81,21 @@ dedupeForGroup := func(inputFile, fileExt, spec, group) {
 
 	keyColumns := []
 	keepRow := []
+	selected := {}
 	for ax in group.axes {
 		keyColumns = append(keyColumns, ax.column)
+		selected[ax.column] = true
 		if !is_undefined(ax.filterOutRegex) {
 			keepRow = append(keepRow, pt.col(ax.column).matchesEcmaRegex(ax.filterOutRegex).not())
 		}
 	}
 	valueColumns := []
 	for col in group.columns {
-		valueColumns = append(valueColumns, col.column)
+		// Several outputs may read one file column; the projection carries it once.
+		if !selected[col.column] {
+			valueColumns = append(valueColumns, col.column)
+			selected[col.column] = true
+		}
 		if !is_undefined(col.filterOutRegex) {
 			keepRow = append(keepRow, pt.col(col.column).matchesEcmaRegex(col.filterOutRegex).not())
 		}

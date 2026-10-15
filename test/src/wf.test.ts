@@ -117,6 +117,13 @@ const sharedKeysSpec = (): SpecUI => {
         "pl7.app/vdj/feature": "CDR3",
       }),
       perClonotype("vGene", "pl7.app/vdj/geneHit", { "pl7.app/vdj/reference": "VGene" }),
+      // A second output from the same file column, with its own id and a different filter.
+      item({
+        column: "vGene",
+        id: "vGeneExceptV1",
+        filterOutRegex: "^IGHV1",
+        spec: { name: "test/vGeneExceptV1", valueType: "String" as const, parentAxes: [1] },
+      }),
     ],
   };
 };
@@ -180,8 +187,9 @@ blockTest(
       indexOf("column", "pl7.app/vdj/uniqueCellCount"),
       indexOf("column", "pl7.app/vdj/sequence"),
       indexOf("column", "pl7.app/vdj/geneHit"),
+      indexOf("column", "test/vGeneExceptV1"),
     ];
-    const [sample, key, cells, cdr3, vGene] = await driver.getData(tableHandle, idx);
+    const [sample, key, cells, cdr3, vGene, vGeneExceptV1] = await driver.getData(tableHandle, idx);
 
     // Present values as `sample/key` or `key` → value, one entry per distinct pair.
     const present = (vec: typeof cdr3, withSample: boolean) => {
@@ -214,6 +222,13 @@ blockTest(
     expect(present(vGene, false)).toEqual({
       c01: "IGHV1-2",
       c02: "IGHV3-23",
+      c04: "IGHV4-34",
+      c05: "IGHV5-51",
+    });
+    // Same file column, other filter: c01 drops, and c03's "NA" text stays, as this filter allows it.
+    expect(present(vGeneExceptV1, false)).toEqual({
+      c02: "IGHV3-23",
+      c03: "NA",
       c04: "IGHV4-34",
       c05: "IGHV5-51",
     });
