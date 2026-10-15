@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PlBtnSecondary } from '@platforma-sdk/ui-vue';
+import { PlBtnSecondary } from "@platforma-sdk/ui-vue";
 
 defineProps<{
   title: string;

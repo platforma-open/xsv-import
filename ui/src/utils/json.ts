@@ -1,6 +1,6 @@
 export function jsonToString(obj: Record<string, string> | undefined): string {
   return JSON.stringify(obj, null, 2);
-};
+}
 
 export function stringToJson(value: string): Record<string, string> {
   const trimmedValue = value.trim();
@@ -10,7 +10,7 @@ export function stringToJson(value: string): Record<string, string> {
   } catch {
     return {};
   }
-};
+}
 
 export function isValidJSON(value: string): boolean {
   try {
@@ -19,4 +19,4 @@ export function isValidJSON(value: string): boolean {
   } catch {
     return false;
   }
-};
+}

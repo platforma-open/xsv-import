@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ColumnSpecParamUI, ValueType } from '@platforma-open/milaboratories.xsv-import.model';
+import type { ColumnSpecParamUI, ValueType } from "@platforma-open/milaboratories.xsv-import.model";
 import {
   PlBtnSecondary,
   PlCheckbox,
@@ -7,12 +7,12 @@ import {
   PlElementList,
   PlTextArea,
   PlTextField,
-} from '@platforma-sdk/ui-vue';
-import type { XsvMetadata } from '../hooks/useMetadataXsv';
-import { VALUE_TYPE_OPTIONS } from '../types/spec';
-import { jsonToString, stringToJson } from '../utils/json';
-import { addAllColumns, createColumn } from '../utils/spec';
-import AddColumn from './AddColumn.vue';
+} from "@platforma-sdk/ui-vue";
+import type { XsvMetadata } from "../hooks/useMetadataXsv";
+import { VALUE_TYPE_OPTIONS } from "../types/spec";
+import { jsonToString, stringToJson } from "../utils/json";
+import { addAllColumns, createColumn } from "../utils/spec";
+import AddColumn from "./AddColumn.vue";
 
 const columnsSpecParamsUI = defineModel<ColumnSpecParamUI[]>({
   required: true,
@@ -23,7 +23,7 @@ const props = defineProps<{
 }>();
 
 const addColumn = (column: undefined | string, valueType: undefined | ValueType) => {
-  columnsSpecParamsUI.value.push(createColumn(column ?? '', valueType, true));
+  columnsSpecParamsUI.value.push(createColumn(column ?? "", valueType, true));
 };
 
 const handleCreateAll = () => {
@@ -57,7 +57,7 @@ const updateColumnAnnotations = (index: number, value: string) => {
           Remove All
         </PlBtnSecondary>
         <div :class="$style.headerSeparator" />
-        <AddColumn :metadata="props.metadata" @add="addColumn"/>
+        <AddColumn :metadata="props.metadata" @add="addColumn" />
       </div>
     </div>
 
@@ -66,26 +66,34 @@ const updateColumnAnnotations = (index: number, value: string) => {
     </div>
 
     <PlElementList
-      v-if="columnsSpecParamsUI.length > 0" v-model:items="columnsSpecParamsUI"
-      :get-item-key="(item) => item.id" :is-expanded="(item) => item.expanded"
-      :on-expand="(item) => item.expanded = !item.expanded" :is-toggled="(item) => item.disabled"
-      :on-toggle="(item) => item.disabled = !item.disabled"
+      v-if="columnsSpecParamsUI.length > 0"
+      v-model:items="columnsSpecParamsUI"
+      :get-item-key="(item) => item.id"
+      :is-expanded="(item) => item.expanded"
+      :on-expand="(item) => (item.expanded = !item.expanded)"
+      :is-toggled="(item) => item.disabled"
+      :on-toggle="(item) => (item.disabled = !item.disabled)"
     >
       <template #item-title="{ item: column, index }">
         <strong>Column {{ index + 1 }}</strong>
-        <span v-if="column.payload.column" :class="$style.columnLabel">{{ column.payload.column }}</span>
+        <span v-if="column.payload.column" :class="$style.columnLabel">{{
+          column.payload.column
+        }}</span>
       </template>
 
       <template #item-content="{ item: column, index }">
         <div :class="$style.formRow">
           <PlTextField
-            v-model="column.payload.column" label="Column" placeholder="Column label from XSV file"
+            v-model="column.payload.column"
+            label="Column"
+            placeholder="Column label from XSV file"
             required
           />
 
           <PlTextField
             :model-value="column.payload.filterOutRegex || ''"
-            label="Filter Out Regex" placeholder="Regex to filter out rows (optional)"
+            label="Filter Out Regex"
+            placeholder="Regex to filter out rows (optional)"
             @update:model-value="column.payload.filterOutRegex = $event || undefined"
           />
         </div>
@@ -93,7 +101,8 @@ const updateColumnAnnotations = (index: number, value: string) => {
         <div :class="$style.formRow">
           <PlTextField
             :model-value="column.payload.naRegex || ''"
-            label="NA Regex" placeholder="Regex to identify N/A values (optional)"
+            label="NA Regex"
+            placeholder="Regex to identify N/A values (optional)"
             @update:model-value="column.payload.naRegex = $event || undefined"
           />
 
@@ -112,12 +121,15 @@ const updateColumnAnnotations = (index: number, value: string) => {
           <div :class="$style.formRow">
             <PlTextField
               :model-value="column.payload.spec.name || ''"
-              label="Name" :placeholder="column.payload.column"
+              label="Name"
+              :placeholder="column.payload.column"
               @update:model-value="column.payload.spec.name = $event || undefined"
             />
 
             <PlDropdown
-              v-model="column.payload.spec.valueType" :options="VALUE_TYPE_OPTIONS" label="Value Type"
+              v-model="column.payload.spec.valueType"
+              :options="VALUE_TYPE_OPTIONS"
+              label="Value Type"
               required
             />
           </div>
@@ -125,12 +137,15 @@ const updateColumnAnnotations = (index: number, value: string) => {
           <div :class="$style.formRow">
             <PlTextArea
               :model-value="jsonToString(column.payload.spec.domain)"
-              label="Domain (JSON)" placeholder="{}" @update:model-value="updateColumnDomain(index, $event)"
+              label="Domain (JSON)"
+              placeholder="{}"
+              @update:model-value="updateColumnDomain(index, $event)"
             />
 
             <PlTextArea
               :model-value="jsonToString(column.payload.spec.annotations)"
-              label="Annotations (JSON)" placeholder="{}"
+              label="Annotations (JSON)"
+              placeholder="{}"
               @update:model-value="updateColumnAnnotations(index, $event)"
             />
           </div>
@@ -212,5 +227,4 @@ const updateColumnAnnotations = (index: number, value: string) => {
   border-radius: 8px;
   border: 1px dashed var(--border-color-div-grey);
 }
-
 </style>

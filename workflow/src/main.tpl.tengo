@@ -1,17 +1,150 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 file := import("@platforma-sdk/workflow-tengo:file")
 xsv := import("@platforma-sdk/workflow-tengo:pframes.xsv")
-pframes := import("@platforma-sdk/workflow-tengo:pframes");
+pframes := import("@platforma-sdk/workflow-tengo:pframes")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+json := import("json")
+
+// Split the columns by the axes they are keyed on. A column with `spec.parentAxes` is
+// imported over that subset of the declared axes, in the given order; a column without
+// it is keyed on every declared axis. Each distinct subset is one converter run over the
+// same file, so one block can publish a sample-level anchor next to per-key properties.
+//
+// A column with its own `filterOutRegex` drops rows for itself alone, so it forms a group
+// of its own: a subset column keeps only the rows it marks while its siblings keep every row.
+//
+// `partitionKeyLength` names the first N declared axes; a group keeps only those of its
+// axes that fall among them, so a column keyed on later axes alone stays unpartitioned.
+columnGroups := func(spec) {
+	pkl := 0
+	if !is_undefined(spec.partitionKeyLength) {
+		pkl = spec.partitionKeyLength
+	}
+
+	allAxes := []
+	for i, _ in spec.axes {
+		allAxes = append(allAxes, i)
+	}
+
+	groups := {}
+	for colIdx, col in spec.columns {
+		axisIdx := allAxes
+		if !is_undefined(col.spec.parentAxes) {
+			axisIdx = col.spec.parentAxes
+		}
+
+		// A filtered output is keyed on its own position: neither a shared regex nor a
+		// shared file column means two outputs drop the same rows.
+		ownRows := -1
+		if !is_undefined(col.filterOutRegex) {
+			ownRows = colIdx
+		}
+		key := json.encode([axisIdx, ownRows])
+		if is_undefined(groups[key]) {
+			axes := []
+			groupPkl := 0
+			for i in axisIdx {
+				axes = append(axes, spec.axes[i])
+				if i < pkl {
+					groupPkl += 1
+				}
+			}
+			groups[key] = { axes: axes, partitionKeyLength: groupPkl, columns: [] }
+		}
+
+		colSpec := maps.clone(col.spec)
+		delete(colSpec, "parentAxes")
+		groups[key].columns = append(groups[key].columns, maps.merge(col, { spec: colSpec }))
+	}
+
+	return groups
+}
+
+// A column keyed on a subset of the axes repeats its value on every row that shares the
+// key (a per-clonotype property is written once per sample). The converter rejects
+// duplicate keys, so such a group is imported from a projection of the file reduced to
+// one row per key. The group's row filters run before the reduction, so a filtered-out
+// value never displaces a valid one for the same key.
+//
+// The projection reader takes the separator from the file type alone; a custom
+// separator cannot be honoured here and fails the run instead of misreading the file.
+dedupeForGroup := func(inputFile, fileExt, spec, group) {
+	standardSeparator := ","
+	if fileExt == "tsv" {
+		standardSeparator = "\t"
+	}
+	if !is_undefined(spec.separator) && spec.separator != standardSeparator {
+		ll.panic("columns with parentAxes need the standard %v separator, got %q", fileExt, spec.separator)
+	}
+
+	keyColumns := []
+	keepRow := []
+	selected := {}
+	for ax in group.axes {
+		keyColumns = append(keyColumns, ax.column)
+		selected[ax.column] = true
+		if !is_undefined(ax.filterOutRegex) {
+			keepRow = append(keepRow, pt.col(ax.column).matchesEcmaRegex(ax.filterOutRegex).not())
+		}
+	}
+	valueColumns := []
+	for col in group.columns {
+		// Several outputs may read one file column; the projection carries it once.
+		if !selected[col.column] {
+			valueColumns = append(valueColumns, col.column)
+			selected[col.column] = true
+		}
+		if !is_undefined(col.filterOutRegex) {
+			keepRow = append(keepRow, pt.col(col.column).matchesEcmaRegex(col.filterOutRegex).not())
+		}
+	}
+
+	ptWf := pt.workflow()
+	df := ptWf.frame(inputFile, {
+		xsvType: fileExt,
+		inferSchema: false,
+		ignoreErrors: spec.skipEmptyLines == true,
+		commentPrefix: spec.commentLinePrefix
+	}).select(append(keyColumns, valueColumns...)...)
+	if len(keepRow) > 0 {
+		df = df.filter(pt.and(keepRow...))
+	}
+	df.unique({ subset: keyColumns, keep: "first", maintainOrder: true }).
+		save("group.tsv")
+	return ptWf.run().getFile("group.tsv")
+}
 
 wf.body(func(args) {
-	fileUploader := file.importFile(args.fileHandle);
-	fileSpecAndData := xsv.importFile(fileUploader.file, args.fileExt, args.spec, { splitDataAndSpec: true });
+	fileUploader := file.importFile(args.fileHandle)
+	nAxes := len(args.spec.axes)
 
-	outputPf := pframes.pFrameBuilder();
-	for k, v in fileSpecAndData {
-		outputPf.add(k, v.spec, v.data);
+	outputPf := pframes.pFrameBuilder()
+	for _, group in columnGroups(args.spec) {
+		groupSpec := maps.merge(args.spec, {
+			axes: group.axes,
+			columns: group.columns,
+			partitionKeyLength: group.partitionKeyLength
+		})
+		groupFile := fileUploader.file
+		groupExt := args.fileExt
+		if len(group.axes) < nAxes {
+			groupFile = dedupeForGroup(fileUploader.file, args.fileExt, args.spec, group)
+			groupExt = "tsv"
+			// The projection is a plain TSV; the source file's parsing settings no longer apply.
+			groupSpec = maps.merge(groupSpec, {
+				separator: undefined,
+				commentLinePrefix: undefined,
+				skipEmptyLines: undefined
+			})
+		}
+		fileSpecAndData := xsv.importFile(groupFile, groupExt, groupSpec, { splitDataAndSpec: true })
+		for k, v in fileSpecAndData {
+			outputPf.add(k, v.spec, v.data)
+		}
 	}
-	outputPf = outputPf.build();
+	outputPf = outputPf.build()
 
 	return {
 		outputs: {

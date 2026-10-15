@@ -1,20 +1,28 @@
 {
   "name": "@platforma-open/milaboratories.xsv-import.test",
-  "private": true,
   "version": "1.0.4",
+  "private": true,
   "description": "Block tests",
+  "keywords": [],
+  "files": [],
   "type": "module",
   "scripts": {
-    "test": "vitest --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "fmt": "ts-builder format",
+    "check": "ts-builder check --target block-test"
   },
-  "files": [],
-  "keywords": [],
   "dependencies": {
     "this-block": "workspace:@platforma-open/milaboratories.xsv-import@*"
   },
   "devDependencies": {
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:",
+    "@platforma-open/milaboratories.xsv-import.model": "workspace:*",
+    "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/test": "catalog:",
-    "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "*"
   }
 }

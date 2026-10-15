@@ -1,35 +1,35 @@
 // copy from https://github.com/milaboratory/pframes/blob/main/packages/conv/docs/import_csv.d.ts
 
 /** PFrame axes and columns within them may store one of these types */
-export type ValueType = 'Int' | 'Long' | 'Float' | 'Double' | 'String';
+export type ValueType = "Int" | "Long" | "Float" | "Double" | "String";
 
 export type PreProcessStep =
   | {
-    /**
+      /**
        * Perform JS String.prototype.replace() operation,
        * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
        */
-    type: 'regexpReplace';
+      type: "regexpReplace";
 
-    /**
+      /**
        * String representing ECMAScript RegEx with at least one capturing group.
        * If you need to reorder capturing groups - use RegExp matching the whole string
        * (must start with string begin anchor ^, end with string end anchor $).
        * @see https://regexr.com/
        */
-    pattern: string;
+      pattern: string;
 
-    /**
+      /**
        * Replacement pattern used to construct result string from captured groups,
        * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#specifying_a_string_as_the_replacement
        * @see https://tc39.es/ecma262/#sec-getsubstitution
        * `srell::regex_replace` is used under the hood, @see https://www.akenotsuki.com/misc/srell/en/
        * Empty string as result would become NA.
        */
-    replacement: string;
-  }
+      replacement: string;
+    }
   | {
-    /**
+      /**
        * Simplified 'regexpReplace' with replacement set to $1.
        * This means that string is replaced with first capture group value.
        * Example 1:
@@ -45,9 +45,9 @@ export type PreProcessStep =
        * - pattern: ((\d+)___([a-z]+)).xlsx
        * - result: 123___abc
        */
-    type: 'regexpExtract';
+      type: "regexpExtract";
 
-    /**
+      /**
        * String representing ECMAScript RegEx with at least one capturing group.
        * RegEx must match the entire string, this would be enforced even when ^ and $ are skipped.
        * If there are no matches - value would be replaced with empty string.
@@ -60,8 +60,8 @@ export type PreProcessStep =
        * - pattern: (\d+___[a-z]+).xlsx
        * - result: 123___abc
        */
-    pattern: string;
-  };
+      pattern: string;
+    };
 
 interface ItemUI<T> {
   id: string;
@@ -280,7 +280,7 @@ export interface Spec {
    * Columns would be stored using specified format
    * @default Binary
    */
-  storageFormat?: 'Binary' | 'Json';
+  storageFormat?: "Binary" | "Json";
 
   /**
    * Partitioning key length
@@ -289,7 +289,7 @@ export interface Spec {
   partitionKeyLength?: number;
 }
 
-export type SpecUI = Omit<Spec, 'axes' | 'columns'> & {
+export type SpecUI = Omit<Spec, "axes" | "columns"> & {
   axes: AxisSpecParamUI[];
   columns: ColumnSpecParamUI[];
 };

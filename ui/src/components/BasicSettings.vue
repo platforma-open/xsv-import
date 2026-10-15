@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import type { SpecUI } from '@platforma-open/milaboratories.xsv-import.model';
-import { PlCheckbox, PlDropdown, PlTextArea, PlTextField } from '@platforma-sdk/ui-vue';
-import { isNil } from 'es-toolkit';
-import { jsonToString, stringToJson } from '../utils/json';
+import type { SpecUI } from "@platforma-open/milaboratories.xsv-import.model";
+import { PlCheckbox, PlDropdown, PlTextArea, PlTextField } from "@platforma-sdk/ui-vue";
+import { isNil } from "es-toolkit";
+import { jsonToString, stringToJson } from "../utils/json";
 
 // Type for basic settings (all Spec fields except axes and columns)
-type BasicSettingsData = Omit<SpecUI, 'axes' | 'columns'>;
+type BasicSettingsData = Omit<SpecUI, "axes" | "columns">;
 
 const settings = defineModel<BasicSettingsData>({ required: true });
 
 // Storage format options
 const storageFormatOptions = [
-  { label: 'Binary', value: 'Binary' as const },
-  { label: 'Json', value: 'Json' as const },
+  { label: "Binary", value: "Binary" as const },
+  { label: "Json", value: "Json" as const },
 ];
 
 // Helper functions for index configuration2
 const updateIndexDomain = (value: string) => {
   if (!settings.value.index) {
-    settings.value.index = { name: '' };
+    settings.value.index = { name: "" };
   }
   settings.value.index.domain = stringToJson(value);
 };
 
 const updateIndexAnnotations = (value: string) => {
   if (!settings.value.index) {
-    settings.value.index = { name: '' };
+    settings.value.index = { name: "" };
   }
   settings.value.index.annotations = stringToJson(value);
 };
@@ -35,7 +35,7 @@ const removeIndex = () => {
 };
 
 const addIndex = () => {
-  settings.value.index = { name: 'Index' };
+  settings.value.index = { name: "Index" };
 };
 </script>
 
@@ -96,7 +96,8 @@ const addIndex = () => {
       <h4>Column Settings</h4>
       <div :class="$style.formRow">
         <PlTextField
-          :model-value="settings.columnNamePrefix || ''" label="Column Name Prefix"
+          :model-value="settings.columnNamePrefix || ''"
+          label="Column Name Prefix"
           placeholder="Optional prefix for all columns"
           @update:model-value="settings.columnNamePrefix = $event || undefined"
         />
@@ -115,13 +116,17 @@ const addIndex = () => {
       <h4>Storage Settings</h4>
       <div :class="$style.formRow">
         <PlDropdown
-          :model-value="settings.storageFormat || 'Binary'" :options="storageFormatOptions"
-          label="Storage Format" @update:model-value="settings.storageFormat = $event"
+          :model-value="settings.storageFormat || 'Binary'"
+          :options="storageFormatOptions"
+          label="Storage Format"
+          @update:model-value="settings.storageFormat = $event"
         />
 
         <PlTextField
-          :model-value="String(settings.partitionKeyLength || 0)" label="Partition Key Length"
-          placeholder="0" @update:model-value="settings.partitionKeyLength = parseInt($event) || 0"
+          :model-value="String(settings.partitionKeyLength || 0)"
+          label="Partition Key Length"
+          placeholder="0"
+          @update:model-value="settings.partitionKeyLength = parseInt($event) || 0"
         />
       </div>
     </div>
@@ -142,18 +147,27 @@ const addIndex = () => {
 
       <div v-if="settings.index" :class="$style.indexSection">
         <div :class="$style.formRow">
-          <PlTextField v-model="settings.index.name" label="Index Name" placeholder="Index" required />
+          <PlTextField
+            v-model="settings.index.name"
+            label="Index Name"
+            placeholder="Index"
+            required
+          />
         </div>
 
         <div :class="$style.formRow">
           <PlTextArea
-            :model-value="jsonToString(settings.index.domain)" label="Domain (JSON)"
-            placeholder="{}" @update:model-value="updateIndexDomain($event)"
+            :model-value="jsonToString(settings.index.domain)"
+            label="Domain (JSON)"
+            placeholder="{}"
+            @update:model-value="updateIndexDomain($event)"
           />
 
           <PlTextArea
-            :model-value="jsonToString(settings.index.annotations)" label="Annotations (JSON)"
-            placeholder="{}" @update:model-value="updateIndexAnnotations($event)"
+            :model-value="jsonToString(settings.index.annotations)"
+            label="Annotations (JSON)"
+            placeholder="{}"
+            @update:model-value="updateIndexAnnotations($event)"
           />
         </div>
       </div>
@@ -163,78 +177,78 @@ const addIndex = () => {
 
 <style module>
 .basicSettings {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .sectionHeader {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .sectionHeader h3 {
-    margin: 0;
-    color: var(--txt-01);
+  margin: 0;
+  color: var(--txt-01);
 }
 
 .formGroup {
-    border: 1px solid var(--border-color-div-grey);
-    border-radius: 8px;
-    padding: 16px;
-    background-color: var(--bg-elevated-01);
+  border: 1px solid var(--border-color-div-grey);
+  border-radius: 8px;
+  padding: 16px;
+  background-color: var(--bg-elevated-01);
 }
 
 .formGroup h4 {
-    margin: 0 0 12px 0;
-    color: var(--txt-01);
-    font-size: 14px;
-    font-weight: 600;
+  margin: 0 0 12px 0;
+  color: var(--txt-01);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .subsectionHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .subsectionHeader h4 {
-    margin: 0;
+  margin: 0;
 }
 
 .indexControls {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
 .formRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
 .formRow:last-child {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .indexSection {
-    padding: 12px;
-    background-color: var(--bg-base);
-    border-radius: 6px;
-    border: 1px solid var(--border-color-div-grey);
-    margin-top: 12px;
+  padding: 12px;
+  background-color: var(--bg-base);
+  border-radius: 6px;
+  border: 1px solid var(--border-color-div-grey);
+  margin-top: 12px;
 }
 
 @media (max-width: 768px) {
-    .formRow {
-        grid-template-columns: 1fr;
-    }
+  .formRow {
+    grid-template-columns: 1fr;
+  }
 
-    .subsectionHeader {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
+  .subsectionHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 }
 </style>
