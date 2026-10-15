@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.xsv-import.ui",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
