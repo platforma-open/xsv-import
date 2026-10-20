@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import
 
+## 2.0.1
+
+### Patch Changes
+
+- 5181384: Release every package through npm trusted publishing (OIDC) so each package's trusted publisher is used before it expires.
+
 ## 2.0.0
 
 ### Major Changes
