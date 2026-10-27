@@ -20,7 +20,7 @@ jobs:
   run:
     needs:
       - init
-    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@feat/mark-unstable-label
+    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
       app-name: 'Block: Xsv Import'
       app-name-slug: 'block-xsv-import'
