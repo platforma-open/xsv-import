@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import.ui
 
+## 2.0.2
+
+### Patch Changes
+
+- @platforma-open/milaboratories.xsv-import.model@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

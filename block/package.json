@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.xsv-import",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "files": [
     "dist",
     "block-pack"

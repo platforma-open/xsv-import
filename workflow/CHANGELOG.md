@@ -1,5 +1,7 @@
 # @platforma-open/milaboratories.xsv-import.workflow
 
+## 2.0.2
+
 ## 2.0.1
 
 ### Patch Changes

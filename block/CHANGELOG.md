@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import
 
+## 2.0.2
+
+### Patch Changes
+
+- f2821fe: No functional change. Release that tests the `mark-unstable` PR label in CI.
+
 ## 2.0.1
 
 ### Patch Changes
