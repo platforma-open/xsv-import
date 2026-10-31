@@ -10,9 +10,10 @@ text := import("text")
 
 // pfconv holds the whole table in memory: measured peak RSS is 13-14 bytes per CSV byte
 // (pfconv 2.2.9, 3-column long tables of 290 and 385 MB). Its RAM request is
-// PFCONV_MEM_PER_BYTE bytes per file byte, clamped to [PFCONV_MEM_MIN, PFCONV_MEM_MAX].
+// PFCONV_MEM_PER_BYTE bytes per file byte, capped at PFCONV_MEM_MAX. At or below
+// PFCONV_MEM_DEFAULT (the backend's default grant) no request is made.
 PFCONV_MEM_PER_BYTE := 20
-PFCONV_MEM_MIN := 512 * 1024 * 1024
+PFCONV_MEM_DEFAULT := 512 * 1024 * 1024
 PFCONV_MEM_MAX := 64 * 1024 * 1024 * 1024
 
 // An upload handle (`upload://upload/<url-encoded JSON>`) carries the file's byte count as
@@ -23,8 +24,8 @@ pfconvMem := func(fileHandle) {
 		return undefined
 	}
 	mem := int(m[0][1].text) * PFCONV_MEM_PER_BYTE
-	if mem < PFCONV_MEM_MIN {
-		return PFCONV_MEM_MIN
+	if mem <= PFCONV_MEM_DEFAULT {
+		return undefined
 	}
 	if mem > PFCONV_MEM_MAX {
 		return PFCONV_MEM_MAX
