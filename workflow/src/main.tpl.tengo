@@ -6,6 +6,31 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 json := import("json")
+text := import("text")
+
+// pfconv holds the whole table in memory: measured peak RSS is 13-14 bytes per CSV byte
+// (pfconv 2.2.9, 3-column long tables of 290 and 385 MB). Its RAM request is
+// PFCONV_MEM_PER_BYTE bytes per file byte, clamped to [PFCONV_MEM_MIN, PFCONV_MEM_MAX].
+PFCONV_MEM_PER_BYTE := 20
+PFCONV_MEM_MIN := 512 * 1024 * 1024
+PFCONV_MEM_MAX := 64 * 1024 * 1024 * 1024
+
+// An upload handle (`upload://upload/<url-encoded JSON>`) carries the file's byte count as
+// `sizeBytes`. An index handle carries none; the converter then keeps the platform default.
+pfconvMem := func(fileHandle) {
+	m := text.re_find(`sizeBytes%22%3A%22([0-9]+)%22`, fileHandle, 1)
+	if is_undefined(m) || len(m) == 0 {
+		return undefined
+	}
+	mem := int(m[0][1].text) * PFCONV_MEM_PER_BYTE
+	if mem < PFCONV_MEM_MIN {
+		return PFCONV_MEM_MIN
+	}
+	if mem > PFCONV_MEM_MAX {
+		return PFCONV_MEM_MAX
+	}
+	return mem
+}
 
 // Split the columns by the axes they are keyed on. A column with `spec.parentAxes` is
 // imported over that subset of the declared axes, in the given order; a column without
@@ -119,6 +144,11 @@ dedupeForGroup := func(inputFile, fileExt, spec, group) {
 wf.body(func(args) {
 	fileUploader := file.importFile(args.fileHandle)
 	nAxes := len(args.spec.axes)
+	importOps := { splitDataAndSpec: true }
+	mem := pfconvMem(args.fileHandle)
+	if !is_undefined(mem) {
+		importOps.mem = mem
+	}
 
 	outputPf := pframes.pFrameBuilder()
 	for _, group in columnGroups(args.spec) {
@@ -139,7 +169,7 @@ wf.body(func(args) {
 				skipEmptyLines: undefined
 			})
 		}
-		fileSpecAndData := xsv.importFile(groupFile, groupExt, groupSpec, { splitDataAndSpec: true })
+		fileSpecAndData := xsv.importFile(groupFile, groupExt, groupSpec, importOps)
 		for k, v in fileSpecAndData {
 			outputPf.add(k, v.spec, v.data)
 		}
