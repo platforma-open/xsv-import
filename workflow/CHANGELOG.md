@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.xsv-import.workflow
 
+## 2.0.3
+
+### Patch Changes
+
+- c5a5052: Size the converter's RAM request from the uploaded file, so CSVs above about 35 MB no longer die at the 512 MiB default
+
 ## 2.0.2
 
 ## 2.0.1
